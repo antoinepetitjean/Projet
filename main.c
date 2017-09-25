@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 
     FILE* fichier = NULL;
 
-    char * forme = malloc(11*sizeof(char));
+    char * forme = malloc(20*sizeof(char));
     int i,j;
 
     fichier = fopen("pentomino.txt", "r");
@@ -20,10 +20,10 @@ int main(int argc, char *argv[])
 
     {
 
-        for(i=0;i<80;i++)
+        while (fgets(forme, 11, fichier) != NULL)
 	{
 	    
-	  fgets(forme,11,fichier);
+	  //fgets(forme,11,fichier);
 	  printf("%s", forme);
 
 	}
