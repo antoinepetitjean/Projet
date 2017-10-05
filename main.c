@@ -1,83 +1,48 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <SDL/SDL.h>
-//#include <string.h>
+#include "pentomino.h"
 
-void lire_fichier(char * f)
-{
-    FILE* fichier = NULL;
-
-    char * forme = malloc(20*sizeof(char));
-    int i,j;
-
-    fichier = fopen(f, "r");
-
- 
-
-    if (fichier != NULL)
-
-    {
-
-        while (fgets(forme, 11, fichier) != NULL)
-	{
-	    
-	  //fgets(forme,11,fichier);
-	  printf("%s", forme);
-
-	}
-
-        fclose(fichier);
-
-    }
-}
-
-void pause()
-{
-    int continuer = 1;
-    SDL_Event event;
- 
-    while (continuer)
-    {
-        SDL_WaitEvent(&event);
-        switch(event.type)
-        {
-            case SDL_QUIT:
-                continuer = 0;
-	    case SDL_KEYUP:
-                continuer = 0;
-        }
-    }
-}
-
+#define SCREEN_WIDTH  640
+#define SCREEN_HEIGHT 640
 
 int main(int argc, char *argv[])
 
 {
+  SDL_Surface *screen, *temp, *pentaminosp;
+  t_carre pentomino;
+  SDL_Init(SDL_INIT_VIDEO);
 
-    /*char * f =malloc(20*sizeof(char));
-    f="pentomino.txt";*/
-    
-    SDL_Surface *ecran = NULL;
-    
-    SDL_Init(SDL_INIT_VIDEO);
+  SDL_WM_SetCaption("Pentamino", "LUL");
 
-    ecran = SDL_SetVideoMode(640, 480, 32, SDL_HWSURFACE);
-    SDL_WM_SetCaption("Ma super fenêtre SDL !", NULL);
-    
-    // Coloration de la surface ecran en bleu-vert
-    SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 17, 206, 112));
+  screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
 
-    SDL_Flip(ecran); /* Mise à jour de l'écran avec sa nouvelle couleur */
+  temp = SDL_LoadBMP("Untitled-1.bmp");
+  pentaminosp = SDL_DisplayFormat(temp);
+  SDL_FreeSurface(temp);
 
-    pause();
+  pentomino.pos.x = (SCREEN_WIDTH - 450) /2;
+  pentomino.pos.y = (SCREEN_HEIGHT - 450) /2;
+  pentomino.sprite.y = 0;
+  pentomino.sprite.w = 450;
+  pentomino.sprite.h = 450;
+  pentomino.sprite.x = 0;
 
-    SDL_Quit();
+  int gameover = 0;
+  char key[SDLK_LAST] = {0};
 
-    return EXIT_SUCCESS;
-    
-    //lire_fichier(f);
- 
+  while (!gameover)
+    {
+      update_events(key, &gameover);
+      SDL_BlitSurface(pentaminosp, &pentomino.sprite, screen, &pentomino.pos);
+      SDL_UpdateRect(screen, 0, 0, 0, 0);
+      SDL_ShowCursor(1);
+    }
 
-    return 0;
+  SDL_FreeSurface(pentaminosp);
+  SDL_Quit();
+
+
+  return 0;
     
 }
