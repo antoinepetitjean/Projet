@@ -6,14 +6,14 @@
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 640
 #define LIGNE_FOND 15
-#define COLONE_FOND 15
+
 	    
 
 int main(int argc, char *argv[])
 {
-  SDL_Surface *screen, *temp, *pentaminosp;
-  s_grille grille;
-  s_piece pieces[10];
+  SDL_Surface *screen, *temp, *carresp;
+  s_grille * grille;
+  //s_piece * pieces = malloc(10 * sizeof(s_piece));
   //t_carre pentomino;
   SDL_Init(SDL_INIT_VIDEO);
   
@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
 
   screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
 
-  temp = SDL_LoadBMP("Untitled-1.bmp");
-  pentaminosp = SDL_DisplayFormat(temp);
+  temp = SDL_LoadBMP("carre.bmp");
+  carresp = SDL_DisplayFormat(temp);
   SDL_FreeSurface(temp);
 
   /*pentomino.pos.x = (SCREEN_WIDTH - 450) /2;
@@ -37,21 +37,23 @@ int main(int argc, char *argv[])
   int gameover = 0;
   char key[SDLK_LAST] = {0};
   grille=lire_fichier_grille("grille.txt");
+  //afficher_grille(grille,);
   printf("\n");
-  lire_fichier_piece("pieces.txt");
+ // lire_fichier_piece("pieces.txt");
   // affiche_fond();
 
   while (!gameover)
     {
       update_events(key, &gameover);
+      afficher_grille(grille, screen, carresp);
       // SDL_BlitSurface(pentaminosp, &pentomino.sprite, screen, &pentomino.pos);
       SDL_UpdateRect(screen, 0, 0, 0, 0);
       SDL_ShowCursor(1);
     }
   //free(&liste_des_pieces);
-  SDL_FreeSurface(pentaminosp);
+  SDL_FreeSurface(carresp);
   SDL_Quit();
-  
+  //free(piece);
   return 0;
   
 }

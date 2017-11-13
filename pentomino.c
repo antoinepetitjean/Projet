@@ -31,15 +31,17 @@ void update_events(char* keys, int *quit)
   }
 }
 
-s_grille lire_fichier_grille(char *f)
+s_grille * lire_fichier_grille(char *f)
 {
   FILE* fichier = NULL;
-  int i,j;
+  int i;
   char c;
-  s_grille  g;
-  g.ligne = 0;
-  g.colonne = 0;
-  g.nom = '1';
+  s_grille * g=malloc(sizeof(s_grille));
+  point2d p;
+  p.x=0;
+  p.y=0;
+  g->pos=malloc(1*sizeof(point2d));
+  g->taille=0;
   fichier = fopen(f, "r");
   c=fgetc(fichier);
   if (fichier != NULL)
@@ -48,24 +50,31 @@ s_grille lire_fichier_grille(char *f)
 	{
 	  if(c == '#') //si c est un diese, on avanc d'un sur les colonns
 	    {
-	      g.colonne = g.colonne+1;
+	      g->taille++;
+	      g->pos=realloc(g->pos,g->taille*sizeof(point2d));
+	      g->pos[g->taille-1]=p;
+	      p.x++;
 	    }
 
-	  if(c == '\n') //si c est un retour à la ligne, on avance d'un sur les lignes
+	  else if(c == '\n') //si c est un retour à la ligne, on avance d'un sur les lignes
 	    { 
-	      g.ligne = g.ligne+1;
-	      g.colonne = 0; //pour pas avoir trop de colonne
+	      p.x=0;
+	      p.y++;
 	    }
+	  
+	  else
+	  {
+	    p.x++;
+	  }
 	  c=fgetc(fichier); //on avance sur le caractère d'après
 	}
     }
   else
     printf("File didnt load\n");
   fclose(fichier);
-  for (i=0;i<=g.ligne;i++) //je fait un test printf de la grille
+  for (i=0;i<g->taille;i++) //je fait un test printf de la grille
     {
-      for (j=0;j<g.colonne;j++)
-	printf("#");
+      printf("( %d %d )\n", g->pos[i].x, g->pos[i].y);
       printf("\n");
     }
   return g; //je retourne la grille, elle a un nom et un nombre de colonne et ligne mais pas de position
@@ -73,7 +82,7 @@ s_grille lire_fichier_grille(char *f)
 
 void lire_fichier_piece(char *f)
 {
-  FILE* fichier = NULL;
+  /*FILE* fichier = NULL;
   int i,j,k,nb;
   char c;
   s_piece pieces[10];
@@ -141,7 +150,25 @@ void lire_fichier_piece(char *f)
       printf("\n");
       }
     printf("\n");
-    }
+    }*/
+}
+
+void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp)
+{
+  int i;
+  s_sprite * s=malloc(sizeof(s_sprite));
+  s->carre = carresp;
+  s->sprite.x=0;
+  s->sprite.y=0;
+  s->sprite.w=30;
+  s->sprite.h=30;
+  for(i=0; i<g->taille; i++)
+  { 
+    s->pos.x=g->pos[i].x*30;
+    s->pos.y=g->pos[i].y*30;
+    SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
+  }
+  free(s);
 }
 
 void rdroite(s_piece *p)
