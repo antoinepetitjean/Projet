@@ -10,6 +10,7 @@ typedef struct point2d{
 
 typedef struct piece{
   int nbpiece; //numéro de la piece
+  int taille; //taille de la piece
   int largeur;
   int hauteur;
   int orientation;
@@ -35,6 +36,7 @@ extern void rdroite(s_piece * p);
 extern void rgauche(s_piece * p);
 extern void deplacer(s_piece * p);
 extern void update_events(char*, int*);
-extern s_grille * lire_fichier_grille(char*);
-extern void lire_fichier_piece(char*);
+extern void lire_fichier(char*, s_grille *g, s_piece *pieces);
+extern void lire_fichier_piece(FILE *fichier, s_piece *pieces);
 extern void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp);
+extern void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp);

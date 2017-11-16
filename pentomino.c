@@ -15,7 +15,7 @@ void update_events(char* keys, int *quit)
     case SDL_KEYUP:
       keys[event.key.keysym.sym] = 0;
       break;
-    /* handle the keyboard */
+      /* handle the keyboard */
     case SDL_KEYDOWN:
       switch (event.key.keysym.sym) {
       case SDLK_ESCAPE:
@@ -31,12 +31,11 @@ void update_events(char* keys, int *quit)
   }
 }
 
-s_grille * lire_fichier_grille(char *f)
+void lire_fichier(char *f, s_grille *g, s_piece *pieces)
 {
   FILE* fichier = NULL;
   int i;
   char c;
-  s_grille * g=malloc(sizeof(s_grille));
   point2d p;
   p.x=0;
   p.y=0;
@@ -55,6 +54,11 @@ s_grille * lire_fichier_grille(char *f)
 	      g->pos[g->taille-1]=p;
 	      p.x++;
 	    }
+	  
+	  else if(c == ' ')
+	    {
+	      p.x++;
+	    }
 
 	  else if(c == '\n') //si c est un retour à la ligne, on avance d'un sur les lignes
 	    { 
@@ -62,96 +66,74 @@ s_grille * lire_fichier_grille(char *f)
 	      p.y++;
 	    }
 	  
-	  else
-	  {
-	    p.x++;
-	  }
+	   else if(c =='b')
+	    {
+	      lire_fichier_piece(fichier, pieces);
+	      break;
+	      }
+	  else //si c'est autre chose
+	    {
+	      p.x++;
+	    }
 	  c=fgetc(fichier); //on avance sur le caractère d'après
 	}
     }
   else
     printf("File didnt load\n");
   fclose(fichier);
-  for (i=0;i<g->taille;i++) //je fait un test printf de la grille
-    {
+  for (i=0;i<g->taille;i++) //je fait un test printf des coordonnées de la grille
+    {				
       printf("( %d %d )\n", g->pos[i].x, g->pos[i].y);
       printf("\n");
     }
-  return g; //je retourne la grille, elle a un nom et un nombre de colonne et ligne mais pas de position
 }
 
-void lire_fichier_piece(char *f)
+void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 {
-  /*FILE* fichier = NULL;
-  int i,j,k,nb;
+  int nb=0;
+  point2d p;
   char c;
-  s_piece pieces[10];
-  nb=0;
-  i=0;
-  j=0;
-  k=0;
-  fichier = fopen(f, "r");
   c=fgetc(fichier);
-  pieces[0].hauteur=0;
-  pieces[0].largeur=0;
-  pieces[0].nbpiece=1;
+  p.x=0;
+  p.y=200;
+  pieces[nb].pos=malloc(sizeof(point2d));
+  pieces[nb].nbpiece=1;
+  pieces[nb].taille=0;
   if (fichier != NULL)
     {
       while (c != EOF)
 	{
 	  if (c == '#') //si c'est un # on incrémente la largeur de la piece de 1 et on met la position de la piece à 1 et on passe à la position suivante
 	    {
-	      pieces[nb].largeur=pieces[nb].largeur+1;
-	      pieces[nb].pos[i][j]=1;
-	      printf("%d",pieces[nb].pos[i][j]);
-	      j=j+1;
+	      pieces[nb].taille++;
+	      pieces[nb].pos=realloc(pieces[nb].pos,pieces[nb].taille*sizeof(point2d));
+	      pieces[nb].pos[pieces[nb].taille-1]=p;
+	      p.x+=30;
 	    }
-	  if (c == 'r') //si c'est un r on change de piece, on l'initialise et on reset les compteurs
+	  else if (c == ' ') //si c'est un espace on incrémente la largeur de la piece de 1 et on met la position de la piece a 0 et on passe à la position suivante
 	    {
-	      nb=nb+1;
-	      pieces[nb].largeur=0;
-	      pieces[nb].hauteur=0;
-	      i=0;
-	      j=0;
-	      pieces[nb].nbpiece=nb+1;
+	      p.x+=30;
 	    }
-	  if (c == ' ') //si c'est un espace on incrémente la largeur de la piece de 1 et on met la position de la piece a 0 et on passe à la position suivante
+	  else if (c == '\n') //si c'est un retour à la ligne on reset la largeur, on incrémente la hauteur et on reset notre compteur de colonne
 	    {
-	      pieces[nb].largeur=pieces[nb].largeur+1;
-	      pieces[nb].pos[i][j]=0;
-	      printf("%d",pieces[nb].pos[i][j]);
-	      j=j+1;
+	      p.x=200*nb;
+	      p.y+=30;
 	    }
-	  if (c == '\n') //si c'est un retour à la ligne on reset la largeur, on incrémente la hauteur et on reset notre compteur de colonne
+	  else if (c == 'r')
 	    {
-	      pieces[nb].hauteur=pieces[nb].hauteur+1;
-	      i=i+1;
-	      j=0;
-	      pieces[nb].largeur=0;
-	      printf("\n");
+	      nb++;
+	      pieces[nb].pos=malloc(sizeof(point2d));
+	      pieces[nb].nbpiece++;
+	      pieces[nb].taille=0;
+	      p.x=200*nb;
+	      p.y=200;
 	    }
 	  c=fgetc(fichier);
 	}
-    }
+	}
   else
     printf("File didn't load");
-  fclose(fichier);
-  for(i=0;i<=nb;i++) //ici je tente un printf mais ça marche pas
-    {
-    for(k=0;k<pieces[i].hauteur;k++)
-      {
-      for(j=0;j<pieces[i].largeur;j++)
-	{
-	  if(pieces[i].pos[k][j]==0)
-	    printf(" ");
-	  if(pieces[i].pos[k][j]==1)
-	    printf("#");
 	}
-      printf("\n");
-      }
-    printf("\n");
-    }*/
-}
 
 void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp)
 {
@@ -169,6 +151,28 @@ void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp)
     SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
   }
   free(s);
+	}
+
+void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp)
+{
+  int i,j;
+  s_sprite * s=malloc(sizeof(s_sprite));
+  s->carre = carresp;
+  s->sprite.x=0;
+  s->sprite.y=0;
+  s->sprite.w=30;
+  s->sprite.h=30;
+  for (i=0;i<5;i++)
+    {
+      for (j=0;j<p[i].taille;j++)
+	{
+	  s->pos.x=p[i].pos[j].x;
+	  s->pos.y=p[i].pos[j].y;
+	  SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
+	}
+    }
+  free(s);
+	  
 }
 
 void rdroite(s_piece *p)
