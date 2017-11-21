@@ -36,10 +36,12 @@ int main(int argc, char *argv[])
 
   while (!gameover)
     {
-      update_events(key, &gameover);
-      SDL_UpdateRect(screen, 0, 0, 0, 0);
+      SDL_BlitSurface(NULL, NULL, screen, NULL);
+      update_events(key, &gameover, pieces);
       SDL_ShowCursor(1);
+      afficher_grille(grille, screen, carresp);
       afficher_piece(pieces, screen, carresp);
+      SDL_UpdateRect(screen, 0, 0, 0, 0);
     }
   SDL_FreeSurface(carresp);
   SDL_Quit();

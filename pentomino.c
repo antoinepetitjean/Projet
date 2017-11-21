@@ -3,7 +3,7 @@
 #include <SDL.h>
 #include "pentomino.h"
 
-void update_events(char* keys, int *quit)
+void update_events(char* keys, int *quit, s_piece *p)
 {
   SDL_Event event;
   while(SDL_PollEvent(&event)){
@@ -16,6 +16,14 @@ void update_events(char* keys, int *quit)
       keys[event.key.keysym.sym] = 0;
       break;
       /* handle the keyboard */
+    case SDL_MOUSEBUTTONDOWN:
+      switch (event.button.button){
+      case SDL_BUTTON_LEFT:
+	deplacer(&event, p);
+	break;
+      default:
+	break;
+      }
     case SDL_KEYDOWN:
       switch (event.key.keysym.sym) {
       case SDLK_ESCAPE:
@@ -95,7 +103,7 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
   char c;
   c=fgetc(fichier);
   p.x=0;
-  p.y=200;
+  p.y=210;
   pieces[nb].pos=malloc(sizeof(point2d));
   pieces[nb].nbpiece=1;
   pieces[nb].taille=0;
@@ -116,7 +124,7 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 	    }
 	  else if (c == '\n') //si c'est un retour à la ligne on reset la largeur, on incrémente la hauteur et on reset notre compteur de colonne
 	    {
-	      p.x=200*nb;
+	      p.x=210*nb;
 	      p.y+=30;
 	    }
 	  else if (c == 'r')
@@ -125,8 +133,8 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 	      pieces[nb].pos=malloc(sizeof(point2d));
 	      pieces[nb].nbpiece++;
 	      pieces[nb].taille=0;
-	      p.x=200*nb;
-	      p.y=200;
+	      p.x=210*nb;
+	      p.y=210;
 	    }
 	  c=fgetc(fichier);
 	}
@@ -151,7 +159,7 @@ void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp)
     SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
   }
   free(s);
-	}
+}
 
 void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp)
 {
@@ -185,7 +193,65 @@ void rgauche(s_piece *p)
 
 }
 
-void deplacer(s_piece *p)
+s_hitbox hitbox_piece(point2d *p)
+{
+  s_hitbox hit;
+  int i;
+  hit.minx=p[0].x;
+  hit.miny=p[0].y;
+  hit.maxx=p[0].x;
+  hit.maxy=p[0].y;
+  for (i=0;i<5;i++)
+    {
+      if (p[i].x>hit.maxx){
+	hit.maxx=p[i].x;
+      }
+      if (p[i].y>hit.maxy){
+	hit.maxy=p[i].y;
+      }
+    }
+  printf("( %d, %d, %d, %d)\n",hit.minx,hit.maxx,hit.miny,hit.maxy);
+  return hit;
+}
+
+
+
+
+void deplacer(SDL_Event *event, s_piece *p)
+{
+  int i,j;
+  s_hitbox hit;
+  for (i=0;i<5;i++)
+    {
+      hit=hitbox_piece(p[i].pos);
+      if (event->button.x>=hit.minx && event->button.y>=hit.miny && event->button.x<=hit.maxx && event->button.y<=hit.maxy)
+	{
+	  for (j=0;j<5;j++)
+	    {
+	      p[i].pos[j].x+=10;
+	      p[i].pos[j].y+=10;
+	      printf("( %d, %d )\n",p[i].pos[j].x,p[i].pos[j].y);
+	    }
+	}
+    }
+}
+
+
+
+/*int select_piece(s_piece *p, int x, int y)
 {
 
-}
+  int i,j;
+  int sel;
+  sel=-1;
+  for(i=0; i<10; i++)
+    {
+      for(j=0; j<5; j++)
+	{
+	  if ((p[i].pos[j].x==posdep.x)&&(p[i].pos[j].y==posdep.y)){
+	    sel=i;
+	  }
+	}
+    }
+    return sel;
+    }*/

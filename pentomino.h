@@ -32,11 +32,20 @@ typedef struct sprite{ //structure qui va servir à afficher les petits carrés
   SDL_Rect pos;
 }s_sprite; 
 
+typedef struct hitbox{
+  int minx;
+  int maxx;
+  int miny;
+  int maxy;
+}s_hitbox;
+
 extern void rdroite(s_piece * p);
 extern void rgauche(s_piece * p);
-extern void deplacer(s_piece * p);
-extern void update_events(char*, int*);
+extern void deplacer(SDL_Event *event, s_piece * p);
+extern void update_events(char*, int*, s_piece * p);
 extern void lire_fichier(char*, s_grille *g, s_piece *pieces);
 extern void lire_fichier_piece(FILE *fichier, s_piece *pieces);
 extern void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp);
 extern void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp);
+extern int select_piece(s_piece *p, int x, int y);
+extern s_hitbox hitbox_piece(point2d *p);
