@@ -262,5 +262,14 @@ void deplacer(SDL_Event *event, s_piece *p)
 
 int victoire(s_grille *g, s_piece *p)
 {
-  return 0;
+  int i,v;
+  v=1;
+  i=0;
+  s_grille * temp = g;
+  while(g.pos[i])
+  {
+    //verifier si la case est remplie
+    i++;
+  }
+  return v;
 }
