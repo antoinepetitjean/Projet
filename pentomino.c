@@ -3,11 +3,9 @@
 #include <SDL.h>
 #include "pentomino.h"
 
-void update_events(char* keys, int *quit, s_piece *p)
+void update_events(char* keys, int *quit,s_grille *g, s_piece *p)
 {
   SDL_Event event;
-  int sel;
-  sel=0;
   while(SDL_PollEvent(&event)){
     switch (event.type) {
       /* close button clicked */
@@ -21,8 +19,13 @@ void update_events(char* keys, int *quit, s_piece *p)
     case SDL_MOUSEBUTTONDOWN:
       switch (event.button.button){
       case SDL_BUTTON_LEFT:
-	select_piece(&event, p);
-	sel= !sel;
+	//select_piece(&event, p);
+	arrondir(p);
+	if(colision(p)==0)
+	{
+	  select_piece(&event, p);
+	}
+	*quit= victoire(g,p);
 	break;
       default:
 	break;
@@ -66,18 +69,18 @@ void lire_fichier(char *f, s_grille *g, s_piece *pieces)
 	      g->taille++;
 	      g->pos=realloc(g->pos,g->taille*sizeof(point2d));
 	      g->pos[g->taille-1]=p;
-	      p.x++;
+	      p.x+=30;
 	    }
 	  
 	  else if(c == ' ')
 	    {
-	      p.x++;
+	      p.x+=30;
 	    }
 
 	  else if(c == '\n') //si c est un retour à la ligne, on avance d'un sur les lignes
 	    { 
 	      p.x=0;
-	      p.y++;
+	      p.y+=30;
 	    }
 	  
 	   else if(c =='b')
@@ -87,7 +90,7 @@ void lire_fichier(char *f, s_grille *g, s_piece *pieces)
 	      }
 	  else //si c'est autre chose
 	    {
-	      p.x++;
+	      p.x+=30;
 	    }
 	  c=fgetc(fichier); //on avance sur le caractère d'après
 	}
@@ -162,8 +165,8 @@ void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp)
   s->sprite.h=30;
   for(i=0; i<g->taille; i++)
   { 
-    s->pos.x=g->pos[i].x*30;
-    s->pos.y=g->pos[i].y*30;
+    s->pos.x=g->pos[i].x;
+    s->pos.y=g->pos[i].y;
     SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
   }
   free(s);
@@ -178,12 +181,12 @@ void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp)
   s->sprite.y=0;
   s->sprite.w=30;
   s->sprite.h=30;
-  for (i=0;i<5;i++)
+  for (i=0;i<count_piece(p);i++)
     {
       for (j=0;j<p[i].taille;j++)
 	{
-	  s->pos.x=p[i].pos[j].x - (p[i].pos[j].x %30);
-	  s->pos.y=p[i].pos[j].y - (p[i].pos[j].y %30);
+	  s->pos.x=p[i].pos[j].x/* - (p[i].pos[j].x %30)*/;
+	  s->pos.y=p[i].pos[j].y/* - (p[i].pos[j].y %30)*/;
 	  
 	  SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
 	}
@@ -202,23 +205,63 @@ void rgauche(s_piece *p)
 
 }
 
-s_hitbox hitbox_piece(point2d *p)
+void arrondir(s_piece * p)
+{
+  int i,j,minx,miny;
+  for (i=0;i<count_piece(p);i++)
+    {
+      minx=p[i].pos[0].x;
+      miny=p[i].pos[0].y;
+      for (j=1; j<p[i].taille; j++)
+      {
+	if(p[i].pos[j].x <minx)
+	  minx=p[i].pos[j].x;
+	
+	if(p[i].pos[j].y <miny)
+	  miny=p[i].pos[j].y;
+      }
+      
+      if(minx<0)
+      {
+	for (j=0; j<p[i].taille; j++)
+	{
+	  p[i].pos[j].x = p[i].pos[j].x - minx;
+	}
+      }
+      
+      if(miny<0)
+      {
+	for (j=0; j<p[i].taille; j++)
+	{
+	  p[i].pos[j].y = p[i].pos[j].y - miny;
+	}
+      }
+      
+      for (j=0; j<p[i].taille; j++)
+      {
+	
+	
+	if((p[i].pos[j].x %30)<15)
+	  p[i].pos[j].x = p[i].pos[j].x - (p[i].pos[j].x %30);
+	else
+	  p[i].pos[j].x = p[i].pos[j].x + (30-p[i].pos[j].x %30);
+	
+	if((p[i].pos[j].y %30)<15)
+	  p[i].pos[j].y = p[i].pos[j].y - (p[i].pos[j].y %30);
+	else
+	  p[i].pos[j].y = p[i].pos[j].y + (30-p[i].pos[j].y %30);
+      }
+      
+    }
+}
+
+s_hitbox hitbox_piece(point2d p)
 {
   s_hitbox hit;
-  int i;
-  hit.minx=p[0].x;
-  hit.miny=p[0].y;
-  hit.maxx=p[0].x+30;
-  hit.maxy=p[0].y+30;
-  for (i=0;i<5;i++)
-    {
-      if (p[i].x>hit.maxx){
-	hit.maxx=p[i].x;
-      }
-      if (p[i].y>hit.maxy){
-	hit.maxy=p[i].y;
-      }
-    }
+  hit.minx=p.x;
+  hit.miny=p.y;
+  hit.maxx=p.x+30;
+  hit.maxy=p.y+30;
   printf("( %d, %d, %d, %d)\n",hit.minx,hit.maxx,hit.miny,hit.maxy);
   return hit;
 }
@@ -228,15 +271,19 @@ s_hitbox hitbox_piece(point2d *p)
 
 void select_piece(SDL_Event *event, s_piece *p)
 {
-  int i;
+  int i,j;
   s_hitbox hit;
-  for (i=0;i<5;i++)
+  for (i=0;i<count_piece(p);i++)
     {
-      hit=hitbox_piece(p[i].pos);
-      if (event->button.x>=hit.minx && event->button.y>=hit.miny && event->button.x<=hit.maxx && event->button.y<=hit.maxy)
-	{
-	  p[i].select= !p[i].select;
-	}
+      for (j=0; j<p[i].taille; j++)
+      {
+	hit=hitbox_piece(p[i].pos[j]);
+	if (event->button.x>=hit.minx && event->button.y>=hit.miny && event->button.x<=hit.maxx && event->button.y<=hit.maxy)
+	  {
+	    p[i].select= !p[i].select;
+	    break;
+	  }
+      }
     }
 }
 
@@ -244,12 +291,12 @@ void deplacer(SDL_Event *event, s_piece *p)
 {
   int i,j;
   //s_hitbox hit;
-  for (i=0;i<5;i++)
+  for (i=0;i<count_piece(p);i++)
     {
     //  hit=hitbox_piece(p[i].pos);
       if (p[i].select)
 	{
-	  for (j=0;j<5;j++)
+	  for (j=0;j<p[i].taille;j++)
 	    {
 	      p[i].pos[j].x += event->motion.xrel;
 	      p[i].pos[j].y += event->motion.yrel;
@@ -259,17 +306,68 @@ void deplacer(SDL_Event *event, s_piece *p)
     }
 }
 
+int colision(s_piece *p)
+{
+  int i,j,k,l,col,nbp;
+  nbp=count_piece(p);
+  col=0;
+  for(i=0; i<nbp;i++)
+  {
+    for(j=0; j<p[i].taille; j++)
+    {
+      for(k=i+1; k<nbp; k++)
+      {
+	for(l=0; l<p[i].taille; l++)
+	{
+	  if(p[i].pos[j].x==p[k].pos[l].x && p[i].pos[j].y==p[k].pos[l].y)
+	  {
+	    col=1;
+	    break;
+	  }
+	}
+      }
+    }
+  }
+  return col;
+}
+
+
 
 int victoire(s_grille *g, s_piece *p)
 {
-  int i,v;
-  v=1;
-  i=0;
-  s_grille * temp = g;
-  while(g.pos[i])
+  int i,j,k,trouve;
+  for(i=0; i<g->taille; i++)
   {
-    //verifier si la case est remplie
+    trouve=0;
+    for(j=0; j<count_piece(p); j++)
+    {
+      for(k=0; k<p[j].taille; k++)
+      {
+	if(g->pos[i].x==p[j].pos[k].x && g->pos[i].y==p[j].pos[k].y)
+	{
+	  trouve=1;
+	  break;
+	}
+      }
+    }
+    if(trouve==0)
+      break;
+  }
+  return trouve;
+}
+
+
+int count_piece(s_piece *p)
+{
+  int i,count;
+  count=0;
+  i=0;
+  while(p[i].pos!=NULL)
+  {
+    count++;
     i++;
   }
-  return v;
+  return count;
 }
+  
+  
