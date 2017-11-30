@@ -39,6 +39,12 @@ void update_events(char* keys, int *quit,s_grille *g, s_piece *p)
       case SDLK_q:
 	*quit = 1;
 	break;
+      case SDLK_a:
+	rgauche(p);
+	break;
+      case SDLK_e:
+	rdroite(p);
+	break;
       default:
 	break;
       }
@@ -51,7 +57,7 @@ void update_events(char* keys, int *quit,s_grille *g, s_piece *p)
 void lire_fichier(char *f, s_grille *g, s_piece *pieces)
 {
   FILE* fichier = NULL;
-  int i;
+ // int i;
   char c;
   point2d p;
   p.x=0;
@@ -98,11 +104,11 @@ void lire_fichier(char *f, s_grille *g, s_piece *pieces)
   else
     printf("File didnt load\n");
   fclose(fichier);
-  for (i=0;i<g->taille;i++) //je fait un test printf des coordonnées de la grille
+  /*for (i=0;i<g->taille;i++) //je fait un test printf des coordonnées de la grille
     {				
       printf("( %d %d )\n", g->pos[i].x, g->pos[i].y);
       printf("\n");
-    }
+    }*/
 }
 
 void lire_fichier_piece(FILE *fichier, s_piece *pieces)
@@ -134,18 +140,22 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 	    }
 	  else if (c == '\n') //si c'est un retour à la ligne on reset la largeur, on incrémente la hauteur et on reset notre compteur de colonne
 	    {
-	      p.x=210*nb;
+	      p.x=210*(nb%5);
 	      p.y+=30;
 	    }
 	  else if (c == 'r')
 	    {
 	      nb++;
+	      if(nb>=MAX_PIECE)
+	      {
+		break;
+	      }
 	      pieces[nb].pos=malloc(sizeof(point2d));
 	      pieces[nb].nbpiece++;
 	      pieces[nb].taille=0;
 	      pieces[nb].select=0;
-	      p.x=210*nb;
-	      p.y=210;
+	      p.x=210*(nb%5);
+	      p.y=210 + 150*(nb/5);
 	    }
 	  c=fgetc(fichier);
 	}
@@ -197,12 +207,42 @@ void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp)
 
 void rdroite(s_piece *p)
 {
-
+  int i, j, pivotx, pivoty, newx, newy;
+  for(i=0; i<count_piece(p); i++)
+  {
+    if(p[i].select)
+    {
+      pivotx=p[i].pos[0].x;
+      pivoty=p[i].pos[0].y;
+      for(j=1; j<p[i].taille; j++)
+      {
+	newx=pivotx - (p[i].pos[j].y - pivoty);
+	newy=pivoty + (p[i].pos[j].x - pivotx);
+	p[i].pos[j].x = newx;
+	p[i].pos[j].y = newy;
+      }
+    }
+  }
 }
 
 void rgauche(s_piece *p)
 {
-
+  int i, j, pivotx, pivoty, newx, newy;
+  for(i=0; i<count_piece(p); i++)
+  {
+    if(p[i].select)
+    {
+      pivotx=p[i].pos[0].x;
+      pivoty=p[i].pos[0].y;
+      for(j=1; j<p[i].taille; j++)
+      {
+	newx=pivotx + (p[i].pos[j].y - pivoty);
+	newy=pivoty - (p[i].pos[j].x - pivotx);
+	p[i].pos[j].x = newx;
+	p[i].pos[j].y = newy;
+      }
+    }
+  }
 }
 
 void arrondir(s_piece * p)
@@ -244,16 +284,19 @@ void arrondir(s_piece * p)
 	if((p[i].pos[j].x %30)<15)
 	  p[i].pos[j].x = p[i].pos[j].x - (p[i].pos[j].x %30);
 	else
-	  p[i].pos[j].x = p[i].pos[j].x + (30-p[i].pos[j].x %30);
+	  p[i].pos[j].x = p[i].pos[j].x + (30 - (p[i].pos[j].x %30));
 	
 	if((p[i].pos[j].y %30)<15)
 	  p[i].pos[j].y = p[i].pos[j].y - (p[i].pos[j].y %30);
 	else
-	  p[i].pos[j].y = p[i].pos[j].y + (30-p[i].pos[j].y %30);
+	  p[i].pos[j].y = p[i].pos[j].y + (30 - (p[i].pos[j].y %30));
       }
       
     }
 }
+
+
+
 
 s_hitbox hitbox_piece(point2d p)
 {
@@ -262,7 +305,6 @@ s_hitbox hitbox_piece(point2d p)
   hit.miny=p.y;
   hit.maxx=p.x+30;
   hit.maxy=p.y+30;
-  printf("( %d, %d, %d, %d)\n",hit.minx,hit.maxx,hit.miny,hit.maxy);
   return hit;
 }
 
@@ -289,17 +331,19 @@ void select_piece(SDL_Event *event, s_piece *p)
 
 void deplacer(SDL_Event *event, s_piece *p)
 {
-  int i,j;
+  int i,j,x,y;
   //s_hitbox hit;
   for (i=0;i<count_piece(p);i++)
     {
     //  hit=hitbox_piece(p[i].pos);
       if (p[i].select)
 	{
+	  x= event->motion.x - p[i].pos[0].x -15;
+	  y= event->motion.y - p[i].pos[0].y -15;
 	  for (j=0;j<p[i].taille;j++)
 	    {
-	      p[i].pos[j].x += event->motion.xrel;
-	      p[i].pos[j].y += event->motion.yrel;
+	      p[i].pos[j].x += x;
+	      p[i].pos[j].y += y;
 	      //printf("( %d, %d )\n",p[i].pos[j].x,p[i].pos[j].y);
 	    }
 	}
@@ -308,27 +352,25 @@ void deplacer(SDL_Event *event, s_piece *p)
 
 int colision(s_piece *p)
 {
-  int i,j,k,l,col,nbp;
+  int i,j,k,l,nbp;
   nbp=count_piece(p);
-  col=0;
   for(i=0; i<nbp;i++)
   {
     for(j=0; j<p[i].taille; j++)
     {
       for(k=i+1; k<nbp; k++)
       {
-	for(l=0; l<p[i].taille; l++)
+	for(l=0; l<p[k].taille; l++)
 	{
 	  if(p[i].pos[j].x==p[k].pos[l].x && p[i].pos[j].y==p[k].pos[l].y)
 	  {
-	    col=1;
-	    break;
+	    return 1;
 	  }
 	}
       }
     }
   }
-  return col;
+  return 0;
 }
 
 
@@ -351,7 +393,7 @@ int victoire(s_grille *g, s_piece *p)
       }
     }
     if(trouve==0)
-      break;
+      return trouve;
   }
   return trouve;
 }

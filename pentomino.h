@@ -3,6 +3,11 @@
 #include <SDL.h>
 #include <stdbool.h>
 
+#define SCREEN_WIDTH  1280
+#define SCREEN_HEIGHT 640
+#define MAX_PIECE 10
+#define DUREE_MAX 20
+
 typedef struct point2d{
   int x;
   int y;
