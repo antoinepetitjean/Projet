@@ -3,7 +3,7 @@
 #include <SDL.h>
 #include "pentomino.h"
 
-void update_events(char* keys, int *quit,s_grille *g, s_piece *p)
+void update_events(char* keys, int *quit,s_grille *g, s_piece *p, int *lvl, clock_t *deb)
 {
   SDL_Event event;
   while(SDL_PollEvent(&event)){
@@ -25,7 +25,19 @@ void update_events(char* keys, int *quit,s_grille *g, s_piece *p)
 	{
 	  select_piece(&event, p);
 	}
-	*quit= victoire(g,p);
+	if (victoire(g,p)==1)
+	{
+	  if(*lvl==NB_LVL) 
+	  {
+	    *quit=1;
+	  }
+	  else
+	  {
+	    lvl++;
+	    *deb = clock();
+	    new_level(g,p,*lvl);
+	  }
+	}
 	break;
       default:
 	break;
@@ -62,7 +74,7 @@ void lire_fichier(char *f, s_grille *g, s_piece *pieces)
   point2d p;
   p.x=0;
   p.y=0;
-  g->pos=malloc(1*sizeof(point2d));
+  g->pos=realloc(g->pos,1*sizeof(point2d));
   g->taille=0;
   fichier = fopen(f, "r");
   c=fgetc(fichier);
@@ -150,7 +162,7 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 	      {
 		break;
 	      }
-	      pieces[nb].pos=malloc(sizeof(point2d));
+	      pieces[nb].pos=realloc(pieces[nb].pos,sizeof(point2d));
 	      pieces[nb].nbpiece++;
 	      pieces[nb].taille=0;
 	      pieces[nb].select=0;
@@ -204,6 +216,24 @@ void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp)
   free(s);
 	  
 }
+
+void afficher_temps(int decompte, SDL_Surface * screen, SDL_Surface * chiffre)
+{
+  s_sprite * s=malloc(sizeof(s_sprite));
+  s->carre = chiffre;
+  s->sprite.x=30*(decompte/10);
+  s->sprite.y=0;
+  s->sprite.w=30;
+  s->sprite.h=30; 
+  s->pos.x=SCREEN_WIDTH/2-15;
+  s->pos.y=30;
+  SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
+  s->sprite.x=30*(decompte%10);
+  s->pos.x=SCREEN_WIDTH/2+16;
+  SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
+  free(s);  
+}
+
 
 void rdroite(s_piece *p)
 {
@@ -398,6 +428,14 @@ int victoire(s_grille *g, s_piece *p)
   return trouve;
 }
 
+void new_level (s_grille *g, s_piece *p, int lvl)
+{
+  char* fichier = malloc(15* sizeof(char));
+  sprintf(fichier, "lvl%d.txt", lvl);
+  //lire_fichier(fichier, g, p);
+  /*erreur de segmentation sur cette fonction je sais pas pourquoi fuck thas bs!*/
+  printf("fichier : %s \nlvl: %d", fichier, lvl);
+}
 
 int count_piece(s_piece *p)
 {

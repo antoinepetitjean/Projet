@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <SDL.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define SCREEN_WIDTH  1280
 #define SCREEN_HEIGHT 640
 #define MAX_PIECE 10
 #define DUREE_MAX 20
+#define NB_LVL 2
 
 typedef struct point2d{
   int x;
@@ -48,14 +50,17 @@ typedef struct hitbox{
 extern void rdroite(s_piece * p);
 extern void rgauche(s_piece * p);
 extern void deplacer(SDL_Event *event, s_piece * p);
-extern void update_events(char*, int*, s_grille * g, s_piece * p);
+extern void update_events(char*, int*, s_grille * g, s_piece * p, int *lvl, clock_t *deb);
 extern void lire_fichier(char*, s_grille *g, s_piece *pieces);
 extern void lire_fichier_piece(FILE *fichier, s_piece *pieces);
 extern void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp);
 extern void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp);
+extern void afficher_temps(int decompte, SDL_Surface * screen, SDL_Surface * chiffre);
 extern void select_piece(SDL_Event *event, s_piece *p);
 extern void arrondir(s_piece *p);
+extern void new_level (s_grille *g, s_piece *p, int lvl);
 extern int colision(s_piece *p);
 extern s_hitbox hitbox_piece(point2d p);
 extern int victoire(s_grille *g, s_piece *p);
 extern int count_piece(s_piece *p);
+

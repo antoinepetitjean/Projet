@@ -1,16 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <SDL/SDL.h>
-#include <time.h>
 #include "pentomino.h"
 
 
-
-	    
-
 int main(int argc, char *argv[])
 {
-  SDL_Surface *screen, *temp, *carresp, *grillesp, *menu;
+  SDL_Surface *screen, *temp, *carresp, *grillesp, *menu, *chiffre;
   s_grille * grille=malloc(sizeof(s_grille));
   s_piece * pieces=malloc((MAX_PIECE+1)*sizeof(s_piece));
   clock_t deb, fin, tot;
@@ -27,16 +23,20 @@ int main(int argc, char *argv[])
   grillesp = SDL_DisplayFormat(temp);
   temp = SDL_LoadBMP("menubeta.bmp");
   menu = SDL_DisplayFormat(temp);
+  temp = SDL_LoadBMP("chiffrestest.bmp");
+  chiffre = SDL_DisplayFormat(temp);
   SDL_FreeSurface(temp);
 
   
   int gameover = 0;
   char key[SDLK_LAST] = {0};
-  lire_fichier("pentomino.txt",grille,pieces);
-  //afficher_piece(pieces, screen, carresp);
-  //afficher_grille(grille, screen, carresp);
-  printf("\n");
-  
+  int lvl=0;
+  /*grille->pos=malloc(0*sizeof(point2d));
+  for(i=0; i<MAX_PIECE;i++)
+  {
+    pieces[i].pos=malloc(0*sizeof(point2d));
+  }*/
+  lire_fichier("lvl0.txt",grille,pieces);
   SDL_BlitSurface(menu, NULL, screen, NULL);
   while(1)
   {
@@ -53,21 +53,25 @@ int main(int argc, char *argv[])
   while (!gameover)
     {
       //SDL_BlitSurface(NULL, NULL, screen, NULL);
-      update_events(key, &gameover, grille, pieces);
+      update_events(key, &gameover, grille, pieces, &lvl, &deb);
       fin=clock();
       tot=(int)(fin-deb)/CLOCKS_PER_SEC;
       decompte=DUREE_MAX-tot;
       if(decompte<=0)gameover=1;
       SDL_ShowCursor(1);
-      SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+      SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 150, 150, 150));
       afficher_grille(grille, screen, grillesp);
       afficher_piece(pieces, screen, carresp);
-      
+      afficher_temps(decompte, screen, chiffre);
       SDL_Flip(screen);
     }
+  //free(grille);
+  //free(pieces);
   SDL_FreeSurface(carresp);
   SDL_FreeSurface(grillesp);
   SDL_FreeSurface(menu);
+  SDL_FreeSurface(chiffre);
+  SDL_FreeSurface(screen);
   SDL_Quit();
   return 0;
   
