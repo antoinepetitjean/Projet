@@ -37,16 +37,17 @@ int main(int argc, char *argv[])
     pieces[i].pos=malloc(0*sizeof(point2d));
   }*/
   lire_fichier("lvl0.txt",grille,pieces);
-  SDL_BlitSurface(menu, NULL, screen, NULL);
   while(1)
   {
+    SDL_BlitSurface(menu, NULL, screen, NULL);
     SDL_PollEvent(&event);
     if (event.key.keysym.sym==SDLK_SPACE) break;
-    else if (event.key.keysym.sym==SDLK_q)
+    else if (event.key.keysym.sym==SDLK_q || event.type==SDL_QUIT)
     {
       gameover=1;
       break;
     }
+    SDL_Flip(screen);
   }
   deb=clock();
   

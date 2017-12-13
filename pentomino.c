@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <SDL.h>
 #include "pentomino.h"
 
 void update_events(char* keys, int *quit,s_grille *g, s_piece *p, int *lvl, clock_t *deb)
@@ -33,9 +30,8 @@ void update_events(char* keys, int *quit,s_grille *g, s_piece *p, int *lvl, cloc
 	  }
 	  else
 	  {
-	    lvl++;
 	    *deb = clock();
-	    new_level(g,p,*lvl);
+	    new_level(g,p,lvl);
 	  }
 	}
 	break;
@@ -73,7 +69,7 @@ void lire_fichier(char *f, s_grille *g, s_piece *pieces)
   char c;
   point2d p;
   p.x=0;
-  p.y=0;
+  p.y=60;
   g->pos=realloc(g->pos,1*sizeof(point2d));
   g->taille=0;
   fichier = fopen(f, "r");
@@ -103,6 +99,7 @@ void lire_fichier(char *f, s_grille *g, s_piece *pieces)
 	  
 	   else if(c =='b')
 	    {
+	      centrer_grille(g);
 	      lire_fichier_piece(fichier, pieces);
 	      break;
 	      }
@@ -130,8 +127,8 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
   char c;
   c=fgetc(fichier);
   p.x=0;
-  p.y=210;
-  pieces[nb].pos=malloc(sizeof(point2d));
+  p.y=270;
+  pieces[nb].pos=realloc(pieces[nb].pos,sizeof(point2d));
   pieces[nb].nbpiece=1;
   pieces[nb].taille=0;
   pieces[nb].select=0;
@@ -166,15 +163,57 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 	      pieces[nb].nbpiece++;
 	      pieces[nb].taille=0;
 	      pieces[nb].select=0;
-	      p.x=210*(nb%5);
-	      p.y=210 + 150*(nb/5);
+	      p.x=270*(nb%5);
+	      p.y=270 + 150*(nb/5);
 	    }
 	  c=fgetc(fichier);
 	}
-	}
+  }
   else
     printf("File didn't load");
-	}
+}
+	
+
+void vider_grille(s_grille *g)
+{
+  g->pos=realloc(g->pos,0*sizeof(point2d));
+  g->taille=0;
+}
+
+void vider_pieces(s_piece *p)
+{
+  int i, c;
+  c=count_piece(p);
+  for (i=0;i<c;i++)
+    {
+      p[i].pos=realloc(p[i].pos,0*sizeof(point2d));
+      p[i].taille=0;
+    }
+}
+
+void centrer_grille(s_grille *g)
+{
+  int i, xmin, xmax, dec;
+  
+  xmin= g->pos[0].x;
+  xmax= g->pos[0].x;
+  
+  for(i=1; i<g->taille; i++)
+  {
+    if(g->pos[i].x<xmin)
+      xmin=g->pos[i].x;
+    if(g->pos[i].x>xmax)
+      xmax=g->pos[i].x;
+  }
+  
+  dec= (SCREEN_WIDTH/2)-((xmin+xmax)/2);
+  dec=dec-(dec%30);
+  
+  for(i=0; i<g->taille; i++)
+  {
+    g->pos[i].x+=dec;
+  }
+}
 
 void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp)
 {
@@ -226,7 +265,7 @@ void afficher_temps(int decompte, SDL_Surface * screen, SDL_Surface * chiffre)
   s->sprite.w=30;
   s->sprite.h=30; 
   s->pos.x=SCREEN_WIDTH/2-15;
-  s->pos.y=30;
+  s->pos.y=15;
   SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
   s->sprite.x=30*(decompte%10);
   s->pos.x=SCREEN_WIDTH/2+16;
@@ -428,13 +467,14 @@ int victoire(s_grille *g, s_piece *p)
   return trouve;
 }
 
-void new_level (s_grille *g, s_piece *p, int lvl)
+void new_level (s_grille *g, s_piece *p, int *lvl)
 {
   char* fichier = malloc(15* sizeof(char));
-  sprintf(fichier, "lvl%d.txt", lvl);
-  //lire_fichier(fichier, g, p);
-  /*erreur de segmentation sur cette fonction je sais pas pourquoi fuck thas bs!*/
-  printf("fichier : %s \nlvl: %d", fichier, lvl);
+  *lvl = *lvl + 1;
+  sprintf(fichier, "lvl%d.txt", *lvl);
+  vider_grille(g);
+  vider_pieces(p);
+  lire_fichier(fichier, g, p);
 }
 
 int count_piece(s_piece *p)

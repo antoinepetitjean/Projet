@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
-#include <stdbool.h>
 #include <time.h>
 
 #define SCREEN_WIDTH  1280
 #define SCREEN_HEIGHT 640
 #define MAX_PIECE 10
 #define DUREE_MAX 20
-#define NB_LVL 2
+#define NB_LVL 3
 
 typedef struct point2d{
   int x;
@@ -28,10 +27,8 @@ typedef struct piece{
 }s_piece;
 
 typedef struct grille{
-  char nom;
   int taille;
   point2d * pos; //position de la grille pour sdl
-  int remplie; //si la liste est remplie, remplie = 1
 }s_grille;
 
 typedef struct sprite{ //structure qui va servir à afficher les petits carrés
@@ -53,12 +50,15 @@ extern void deplacer(SDL_Event *event, s_piece * p);
 extern void update_events(char*, int*, s_grille * g, s_piece * p, int *lvl, clock_t *deb);
 extern void lire_fichier(char*, s_grille *g, s_piece *pieces);
 extern void lire_fichier_piece(FILE *fichier, s_piece *pieces);
+extern void vider_grille(s_grille *g);
+extern void vider_pieces(s_piece *p);
+extern void centrer_grille(s_grille *g);
 extern void afficher_grille(s_grille *g, SDL_Surface * screen, SDL_Surface * carresp);
 extern void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp);
 extern void afficher_temps(int decompte, SDL_Surface * screen, SDL_Surface * chiffre);
 extern void select_piece(SDL_Event *event, s_piece *p);
 extern void arrondir(s_piece *p);
-extern void new_level (s_grille *g, s_piece *p, int lvl);
+extern void new_level (s_grille *g, s_piece *p, int *lvl);
 extern int colision(s_piece *p);
 extern s_hitbox hitbox_piece(point2d p);
 extern int victoire(s_grille *g, s_piece *p);
