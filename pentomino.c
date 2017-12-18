@@ -1,6 +1,6 @@
 #include "pentomino.h"
 
-void update_events(char* keys, int *quit,s_grille *g, s_piece *p, int *lvl, clock_t *deb)
+void update_events(char* keys, int *quit,s_grille *g, s_piece *p, int *lvl, int *deb)
 {
   SDL_Event event;
   while(SDL_PollEvent(&event)){
@@ -30,7 +30,7 @@ void update_events(char* keys, int *quit,s_grille *g, s_piece *p, int *lvl, cloc
 	  }
 	  else
 	  {
-	    *deb = clock();
+	    *deb = SDL_GetTicks();
 	    new_level(g,p,lvl);
 	  }
 	}
@@ -113,11 +113,6 @@ void lire_fichier(char *f, s_grille *g, s_piece *pieces)
   else
     printf("File didnt load\n");
   fclose(fichier);
-  /*for (i=0;i<g->taille;i++) //je fait un test printf des coordonnées de la grille
-    {				
-      printf("( %d %d )\n", g->pos[i].x, g->pos[i].y);
-      printf("\n");
-    }*/
 }
 
 void lire_fichier_piece(FILE *fichier, s_piece *pieces)
@@ -126,12 +121,15 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
   point2d p;
   char c;
   c=fgetc(fichier);
-  p.x=0;
-  p.y=270;
+  p.x=30;
+  p.y=300;
   pieces[nb].pos=realloc(pieces[nb].pos,sizeof(point2d));
   pieces[nb].nbpiece=1;
   pieces[nb].taille=0;
   pieces[nb].select=0;
+  pieces[nb].r=rand()%255;
+  pieces[nb].v=rand()%255;
+  pieces[nb].b=rand()%255;
   if (fichier != NULL)
     {
       while (c != EOF)
@@ -149,7 +147,7 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 	    }
 	  else if (c == '\n') //si c'est un retour à la ligne on reset la largeur, on incrémente la hauteur et on reset notre compteur de colonne
 	    {
-	      p.x=210*(nb%5);
+	      p.x=180*(nb%7)+30;
 	      p.y+=30;
 	    }
 	  else if (c == 'r')
@@ -163,8 +161,15 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 	      pieces[nb].nbpiece++;
 	      pieces[nb].taille=0;
 	      pieces[nb].select=0;
-	      p.x=270*(nb%5);
-	      p.y=270 + 150*(nb/5);
+	      pieces[nb].r=rand()%255;
+	      pieces[nb].v=rand()%255;
+	      pieces[nb].b=rand()%255;
+	      p.x=180*(nb%7)+30;
+	      p.y=300 + 150*(nb/7);
+	    }
+	  else
+	    {
+	      printf("Le caractère \'%c\' a été ignoré \n",c);
 	    }
 	  c=fgetc(fichier);
 	}
@@ -242,14 +247,21 @@ void afficher_piece(s_piece *p, SDL_Surface * screen, SDL_Surface * carresp)
   s->sprite.y=0;
   s->sprite.w=30;
   s->sprite.h=30;
+  /*SDL_Rect *r;
+  r->x=0;
+  r->y=0;
+  r->w=30;
+  r->h=30;*/
   for (i=0;i<count_piece(p);i++)
     {
       for (j=0;j<p[i].taille;j++)
 	{
-	  s->pos.x=p[i].pos[j].x/* - (p[i].pos[j].x %30)*/;
-	  s->pos.y=p[i].pos[j].y/* - (p[i].pos[j].y %30)*/;
-	  
+	  s->pos.x=p[i].pos[j].x;
+	  s->pos.y=p[i].pos[j].y;
 	  SDL_BlitSurface(s->carre, &s->sprite, screen, &s->pos);
+	  /*r->x=p[i].pos[j].x;
+	  r->y=p[i].pos[j].y;
+	  SDL_FillRect(screen, r, SDL_MapRGB(screen->format, p[i].r, p[i].v, p[i].b));*/
 	}
     }
   free(s);

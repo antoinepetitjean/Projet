@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
   SDL_Surface *screen, *temp, *carresp, *grillesp, *menu, *chiffre;
   s_grille * grille=malloc(sizeof(s_grille));
   s_piece * pieces=malloc((MAX_PIECE+1)*sizeof(s_piece));
-  clock_t deb, fin, tot;
+  int deb, fin, tot;
   SDL_Event event;
   int decompte;
   SDL_Init(SDL_INIT_VIDEO);
@@ -26,6 +26,11 @@ int main(int argc, char *argv[])
   temp = SDL_LoadBMP("chiffrestest.bmp");
   chiffre = SDL_DisplayFormat(temp);
   SDL_FreeSurface(temp);
+  
+  printf("\n\n\nCommandes:\n");
+  printf("\ncliquez pour selectionner une pieces et \ncliquez à nouveau à l'endroit ou vous souhaitez la placer.\n");
+  printf("a, e = rotation pieces\n");
+  printf("q = quitter le jeu\n");
 
   
   int gameover = 0;
@@ -49,18 +54,18 @@ int main(int argc, char *argv[])
     }
     SDL_Flip(screen);
   }
-  deb=clock();
+  deb=SDL_GetTicks();
   
   while (!gameover)
     {
       //SDL_BlitSurface(NULL, NULL, screen, NULL);
       update_events(key, &gameover, grille, pieces, &lvl, &deb);
-      fin=clock();
-      tot=(int)(fin-deb)/CLOCKS_PER_SEC;
+      fin=SDL_GetTicks();
+      tot=(fin-deb)/1000;
       decompte=DUREE_MAX-tot;
       if(decompte<=0)gameover=1;
       SDL_ShowCursor(1);
-      SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 150, 150, 150));
+      SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 50, 50, 50));
       afficher_grille(grille, screen, grillesp);
       afficher_piece(pieces, screen, carresp);
       afficher_temps(decompte, screen, chiffre);
