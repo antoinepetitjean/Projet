@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
   chiffre = SDL_DisplayFormat(temp);
   SDL_FreeSurface(temp);
   
-  printf("\n\n\nCommandes:\n");
+  /* printf("\n\n\nCommandes:\n");
   printf("\ncliquez pour selectionner une pieces et \ncliquez à nouveau à l'endroit ou vous souhaitez la placer.\n");
   printf("a, e = rotation pieces\n");
-  printf("q = quitter le jeu\n");
+  printf("q = quitter le jeu\n");*/
 
   
   int gameover = 0;
@@ -63,7 +63,11 @@ int main(int argc, char *argv[])
       fin=SDL_GetTicks();
       tot=(fin-deb)/1000;
       decompte=DUREE_MAX-tot;
-      if(decompte<=0)gameover=1;
+      if(decompte<=0)
+	{
+	  gameover=1;
+	  printf("Vous avez perdu\n");
+	}
       SDL_ShowCursor(1);
       SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 50, 50, 50));
       afficher_grille(grille, screen, grillesp);

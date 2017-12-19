@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
-#include <time.h>
 
 #define SCREEN_WIDTH  1280
 #define SCREEN_HEIGHT 640
 #define MAX_PIECE 10
-#define DUREE_MAX 20
-#define NB_LVL 3
+#define DUREE_MAX 60
+#define NB_LVL 4
 
 typedef struct point2d{
   int x;
@@ -47,7 +46,7 @@ typedef struct hitbox{
 extern void rdroite(s_piece * p);
 extern void rgauche(s_piece * p);
 extern void deplacer(SDL_Event *event, s_piece * p);
-extern void update_events(char*, int*, s_grille * g, s_piece * p, int *lvl, clock_t *deb);
+extern void update_events(char*, int*, s_grille * g, s_piece * p, int *lvl, int *deb);
 extern void lire_fichier(char*, s_grille *g, s_piece *pieces);
 extern void lire_fichier_piece(FILE *fichier, s_piece *pieces);
 extern void vider_grille(s_grille *g);

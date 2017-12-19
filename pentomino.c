@@ -27,6 +27,7 @@ void update_events(char* keys, int *quit,s_grille *g, s_piece *p, int *lvl, int 
 	  if(*lvl==NB_LVL) 
 	  {
 	    *quit=1;
+	    printf("Vous avez gagné!\n");
 	  }
 	  else
 	  {
@@ -127,9 +128,6 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
   pieces[nb].nbpiece=1;
   pieces[nb].taille=0;
   pieces[nb].select=0;
-  pieces[nb].r=rand()%255;
-  pieces[nb].v=rand()%255;
-  pieces[nb].b=rand()%255;
   if (fichier != NULL)
     {
       while (c != EOF)
@@ -161,9 +159,6 @@ void lire_fichier_piece(FILE *fichier, s_piece *pieces)
 	      pieces[nb].nbpiece++;
 	      pieces[nb].taille=0;
 	      pieces[nb].select=0;
-	      pieces[nb].r=rand()%255;
-	      pieces[nb].v=rand()%255;
-	      pieces[nb].b=rand()%255;
 	      p.x=180*(nb%7)+30;
 	      p.y=300 + 150*(nb/7);
 	    }
